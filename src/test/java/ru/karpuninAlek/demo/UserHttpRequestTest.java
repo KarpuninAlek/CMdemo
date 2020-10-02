@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import ru.karpuninAlek.demo.model.ResultResponse;
 import ru.karpuninAlek.demo.model.User;
 
 import java.util.ArrayList;
@@ -37,51 +40,48 @@ public class UserHttpRequestTest {
 
     @Test
     @Order(2)
-    public void postingShouldReturnCreatredUser() throws Exception {
-        User sample = new User("uniqueAlek");
-        sample.setName("Alek K ");
+    public void postingShouldReturnSuccess() throws Exception {
         String password = "StrongPassword5";
-        sample.setPassword(password);
-        User returnUser = this.restTemplate.postForObject(usersUrl(), sample, User.class);
-        assertThat(returnUser)
-                .isEqualToComparingFieldByField(sample);
+        User sample = new User("uniqueAlek", "Alek K ", password);
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().isSuccess()).isTrue();
     }
 
     @Test
     @Order(3)
     public void shouldReturnCreatredPreviouslyUser() throws Exception {
         String login = "uniqueAlek";
-        User sample = new User(login);
-        sample.setName("Alek K ");
         String password = "StrongPassword5";
-        sample.setPassword(password);
-        User returnUser = this.restTemplate.getForObject(usersUrl() + login, User.class);
-        assertThat(returnUser)
-                .isEqualToComparingFieldByField(sample);
+        User sample = new User(login, "Alek K ", password);
+        ResponseEntity<User> response = this.restTemplate.getForEntity(usersUrl() + login, User.class);
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).isEqualToComparingFieldByField(sample);
     }
 
     @Test
     @Order(4)
-    public void shouldReturnChangedUser() throws Exception {
+    public void putShouldReturnSuccessAndUserShouldBeChanged() throws Exception {
         String login = "uniqueAlek";
-        User sample = new User(login);
-        sample.setName("Alex N");
         String password = "StrongPassword6";
-        sample.setPassword(password);
+        User sample = new User(login, "Alex N", password);
         this.restTemplate.put(usersUrl() + login, sample);
-        User returnUser =this.restTemplate.getForObject(usersUrl() + login, User.class);
-        assertThat(returnUser)
-                .isEqualToComparingFieldByField(sample);
+        ResponseEntity<User> response = this.restTemplate.getForEntity(usersUrl() + login, User.class);
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).isEqualToComparingFieldByField(sample);
     }
 
     @Test
     @Order(5)
     public void shouldReturnEmptiedPreviouslyUsers() throws Exception {
         String login = "uniqueAlek";
-        User sample = new User(login);
-        sample.setName("Alek K ");
         String password = "StrongPassword5";
-        sample.setPassword(password);
+        User sample = new User(login, "Alek K ", password);
         this.restTemplate.delete(usersUrl() + login);
         returnsEmptyUsersArray();
     }

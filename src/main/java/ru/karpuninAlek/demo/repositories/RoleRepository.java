@@ -11,4 +11,8 @@ public interface RoleRepository extends CrudRepository<Role, Long> {
 
     Optional<Role> findByName(String name);
 
+    void deleteById(Long id);
+
+    boolean existsByName(String name);
+
 }
