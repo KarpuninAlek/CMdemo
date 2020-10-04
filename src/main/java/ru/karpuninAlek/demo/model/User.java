@@ -84,6 +84,10 @@ public class User {
             errors.add("Login can't be null");
             return;
         }
+        if (login.isEmpty()) {
+            errors.add("Login can't be empty");
+            return;
+        }
         if (login.matches(".* +.*")) {
             errors.add("Login must not contain space symbols");
         }
@@ -98,6 +102,10 @@ public class User {
             errors.add("Name can't be null");
             return;
         }
+        if (name.isEmpty()) {
+            errors.add("Name can't be empty");
+            return;
+        }
         if (name.length() > MAX_NAME_LENGTH) {
             errors.add("Name is too long");
         }
@@ -109,12 +117,16 @@ public class User {
             errors.add("Password can't be null");
             return;
         }
+        if (password.isEmpty()) {
+            errors.add("Password can't be empty");
+            return;
+        }
         // ".*\\d.*" = contains a number
         // ".*\\p{Lu}.*" = contains a capital letter
         if (!(password.matches(".*\\d.*") && password.matches(".*\\p{Lu}.*"))) {
             errors.add("Password is not up to security standard");
         }
-        if (name.length() > MAX_PASSWORD_LENGTH) {
+        if (password.length() > MAX_PASSWORD_LENGTH) {
             errors.add("Password is too long");
         }
         this.password = password;

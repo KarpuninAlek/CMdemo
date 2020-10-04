@@ -113,7 +113,7 @@ public class UserService {
 
     User checkedForUpdateUser(String login, UserDTO dto){
         User user = new User(dto);
-        if (!login.equals(user.getLogin()) && !userRepository.existsByLogin(user.getLogin())) {
+        if (!login.equals(user.getLogin()) && userRepository.existsByLogin(user.getLogin())) {
             user.addError("Can't change user's login to already existing one");
         }
         if (dto.roles != null) {

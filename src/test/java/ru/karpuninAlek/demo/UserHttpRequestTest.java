@@ -217,4 +217,140 @@ public class UserHttpRequestTest {
         assertThat(userResponse.getBody().roles, is(not(empty())));
     }
 
+    //region Empty field post
+    @Test
+    @Order(12)
+    public void postingShouldReturnEmptyPasswordError() throws Exception {
+        UserDTO sample = new UserDTO("log", "nam", "");
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Password can't be empty"));
+    }
+
+    @Test
+    @Order(13)
+    public void postingShouldReturnEmptyNameError() throws Exception {
+        UserDTO sample = new UserDTO("log", "", "Pass5");
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Name can't be empty"));
+    }
+
+    @Test
+    @Order(14)
+    public void postingShouldReturnEmptyLoginError() throws Exception {
+        UserDTO sample = new UserDTO("", "nam", "Pass5");
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Login can't be empty"));
+    }
+    //endregion
+
+    //region Null field post
+    @Test
+    @Order(15)
+    public void postingShouldReturnNullPasswordError() throws Exception {
+        UserDTO sample = new UserDTO("log", "nam", null);
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Password can't be null"));
+    }
+
+    @Test
+    @Order(16)
+    public void postingShouldReturnNullNameError() throws Exception {
+        UserDTO sample = new UserDTO("log", null, "Pass5");
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Name can't be null"));
+    }
+
+    @Test
+    @Order(17)
+    public void postingShouldReturnNullLoginError() throws Exception {
+        UserDTO sample = new UserDTO(null, "nam", "Pass5");
+        ResponseEntity<ResultResponse> response = this.restTemplate.postForEntity(usersUrl(), sample, ResultResponse.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+        assertThat(response.getBody(), is(notNullValue()));
+        assertThat(response.getBody().getErrors(), contains("Login can't be null"));
+    }
+    //endregion
+
+    @Test
+    @Order(18)
+    public void puttingShouldReturnEmptyPasswordErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO("log", "nam", "");
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    @Order(19)
+    public void puttingShouldReturnEmptyNameErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO("log", "", "Pass5");
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    @Order(20)
+    public void puttingShouldReturnEmptyLoginErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO("", "nam", "Pass5");
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    @Order(21)
+    public void puttingShouldReturnNullPasswordErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO("log", "nam", null);
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    @Order(22)
+    public void puttingShouldReturnNullNameErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO("log", null, "Pass5");
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
+    @Test
+    @Order(23)
+    public void puttingShouldReturnNullLoginErrorNoChange() throws Exception {
+        UserDTO sample = new UserDTO(null, "nam", "Pass5");
+        List<UserDTO> samples = getCorrectUserSamples();
+        UserDTO dto = samples.get(2);
+        this.restTemplate.put(usersUrl() + dto.login, sample);
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + dto.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(response);
+        assertThat(response.getBody(), is(dto));
+    }
+
 }

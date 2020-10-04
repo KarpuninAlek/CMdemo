@@ -30,6 +30,11 @@ public class UserController {
                 .body(new ResultResponse(exception));
     }
 
+    private static ResponseEntity<ResultResponse> unprocessableEntity(ResultResponse result) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(result);
+    }
+
     //endregion
 
     @Autowired
@@ -58,7 +63,13 @@ public class UserController {
     @RequestMapping(value = "users", method = RequestMethod.POST)
     public ResponseEntity<?> setUser(@RequestBody UserDTO dto){
         try {
-            return ResponseEntity.ok(userService.save(dto));
+            ResultResponse result = userService.save(dto);
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(result);
+            } else {
+                return unprocessableEntity(result);
+            }
+
         } catch (IllegalArgumentException e) {
             return badRequestResponse(e);
         } catch (Exception e) {
@@ -87,7 +98,7 @@ public class UserController {
             if (result.isSuccess()) {
                 return ResponseEntity.ok(result);
             } else {
-                return ResponseEntity.unprocessableEntity().body(result);
+                return unprocessableEntity(result);
             }
         } catch (IllegalArgumentException e) {
             return badRequestResponse(e);
