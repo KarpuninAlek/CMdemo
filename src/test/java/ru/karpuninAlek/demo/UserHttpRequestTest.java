@@ -205,4 +205,16 @@ public class UserHttpRequestTest {
         assertThat(userResponse.getBody(), is(changed));
     }
 
+    @Test
+    @Order(11)
+    public void shouldReturnNotChangedUser() throws Exception {
+        List<UserDTO> samples = getCorrectUserSamplesNoRoles();
+        UserDTO changed = samples.get(6);
+        changed.roles = null;
+        this.restTemplate.put(usersUrl() + changed.login, changed);
+        ResponseEntity<UserDTO> userResponse = this.restTemplate.getForEntity(usersUrl() + changed.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(userResponse);
+        assertThat(userResponse.getBody().roles, is(not(empty())));
+    }
+
 }

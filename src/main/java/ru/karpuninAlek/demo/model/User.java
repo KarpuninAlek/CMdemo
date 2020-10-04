@@ -129,7 +129,6 @@ public class User {
     public User updatedFrom(User another){
         this.name = another.name;
         this.password = another.password;
-        this.roles = another.getRoles();
         return this;
     }
 

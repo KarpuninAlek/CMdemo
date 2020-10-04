@@ -88,7 +88,7 @@ public class UserService {
 
     void deleteUserFromRole(User user, Role role) {
         role.removeUser(user);
-        if (role.getUsers().size() == 0) {
+        if (role.getUsers().isEmpty()) {
             roleRepository.delete(role);
         }
     }
@@ -116,15 +116,18 @@ public class UserService {
         if (!login.equals(user.getLogin()) && !userRepository.existsByLogin(user.getLogin())) {
             user.addError("Can't change user's login to already existing one");
         }
-        Set<Role> roles = new HashSet<>();
-        dto.roles.forEach(roleDTO -> {
-            if (roleRepository.existsByName(roleDTO.name)) {
-                roleRepository.findByName(roleDTO.name).ifPresent(roles::add);
-            } else {
-                roles.add(roleRepository.save(new Role(roleDTO.name)));
-            }
-        });
-        user.setRoles(roles);
+        if (dto.roles != null) {
+            Set<Role> roles = new HashSet<>();
+            dto.roles.forEach(roleDTO -> {
+                if (roleRepository.existsByName(roleDTO.name)) {
+                    roleRepository.findByName(roleDTO.name).ifPresent(roles::add);
+                } else {
+                    roles.add(roleRepository.save(new Role(roleDTO.name)));
+                }
+            });
+            user.setRoles(roles);
+        }
+
         return user;
     }
 
@@ -139,14 +142,18 @@ public class UserService {
         if (login.equals(user.getLogin())) {
             User existing = userRepository.findByLogin(login);
 
-            Set<Role> rolesToAdd = new HashSet<>(user.getRoles());
-            rolesToAdd.removeAll(existing.getRoles());
-            rolesToAdd.forEach(role -> saveRoleWithUser(role, existing));
+            if (dto.roles != null) {
+                Set<Role> rolesToAdd = new HashSet<>(user.getRoles());
+                rolesToAdd.removeAll(existing.getRoles());
+                rolesToAdd.forEach(role -> saveRoleWithUser(role, existing));
 
-            Set<Role> rolesToFree = new HashSet<>(existing.getRoles());
-            rolesToFree.removeAll(user.getRoles());
-            rolesToFree.forEach(role -> deleteUserFromRole(existing, role));
+                Set<Role> rolesToFree = new HashSet<>(existing.getRoles());
+                rolesToFree.removeAll(user.getRoles());
+                rolesToFree.forEach(role -> deleteUserFromRole(existing, role));
 
+
+                existing.setRoles(user.getRoles());
+            }
             existing.updatedFrom(user);
         } else {
             delete(login);
