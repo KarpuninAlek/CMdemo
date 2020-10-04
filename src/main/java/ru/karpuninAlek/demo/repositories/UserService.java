@@ -66,7 +66,7 @@ public class UserService {
             throw new IllegalArgumentException("User with such login already exists");
         }
 
-        if (dto.roles.size() > 0) {
+        if (dto.roles != null && !dto.roles.isEmpty()) {
             Set<Role> roles = new HashSet<>();
             dto.roles.forEach(role -> roles.add(new Role(role)));
 
@@ -101,13 +101,7 @@ public class UserService {
         }
 
         User user = userRepository.findByLogin(login);
-        user.getRoles().forEach(role -> {
-            deleteUserFromRole(user, role);
-//                role.removeUser(user);
-//                if (role.getUsers().size() == 0) {
-//                    roleRepository.delete(role);
-//                }
-        });
+        user.getRoles().forEach(role -> deleteUserFromRole(user, role));
         userRepository.delete(user);
     }
 

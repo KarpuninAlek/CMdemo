@@ -8,8 +8,6 @@ import java.util.List;
 
 public class ResultResponse {
 
-    private static final int MAX_ERROR_LENGTH = 10000;
-
     private static List<String> exceptionToErrors(Exception exception) {
         List<String> errors = new ArrayList<>();
         errors.add(exception.getLocalizedMessage());
@@ -29,9 +27,6 @@ public class ResultResponse {
     }
 
     public ResultResponse(List<String> errors) throws IllegalArgumentException {
-        if (errors.stream().anyMatch(error -> error.length() > MAX_ERROR_LENGTH)) {
-            throw new IllegalArgumentException("Error description is too long");
-        }
         this.success = false;
         this.errors = errors;
     }
