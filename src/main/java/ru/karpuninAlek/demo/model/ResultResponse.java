@@ -8,20 +8,21 @@ import java.util.List;
 
 public class ResultResponse {
 
-    private static final int MAX_ERROR_LENGTH = 100;
-
-    @NonNull
-    private boolean success = true;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<String> errors = null;
-
-    public ResultResponse(){}
+    private static final int MAX_ERROR_LENGTH = 10000;
 
     private static List<String> exceptionToErrors(Exception exception) {
         List<String> errors = new ArrayList<>();
         errors.add(exception.getLocalizedMessage());
         return errors;
     }
+
+    @NonNull
+    private boolean success = true;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<String> errors = null;
+
+    //region Initializers
+    public ResultResponse(){}
 
     public ResultResponse(Exception exception) throws IllegalArgumentException {
         this(exceptionToErrors(exception));
@@ -34,6 +35,7 @@ public class ResultResponse {
         this.success = false;
         this.errors = errors;
     }
+    //endregion
 
     public boolean isSuccess() {
         return success;

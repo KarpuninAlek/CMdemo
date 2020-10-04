@@ -2,7 +2,9 @@ package ru.karpuninAlek.demo.repositories;
 
 import org.springframework.data.repository.CrudRepository;
 import ru.karpuninAlek.demo.model.Role;
+import ru.karpuninAlek.demo.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface RoleRepository extends CrudRepository<Role, Long> {
@@ -14,5 +16,7 @@ public interface RoleRepository extends CrudRepository<Role, Long> {
     void deleteById(Long id);
 
     boolean existsByName(String name);
+
+    List<Role> findAllByUsersContaining(User user);
 
 }

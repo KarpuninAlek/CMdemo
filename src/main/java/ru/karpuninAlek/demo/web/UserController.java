@@ -3,125 +3,98 @@ package ru.karpuninAlek.demo.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.karpuninAlek.demo.model.DTOs.UserDTO;
 import ru.karpuninAlek.demo.model.ResultResponse;
-import ru.karpuninAlek.demo.model.User;
-import ru.karpuninAlek.demo.repositories.UserRepository;
+import ru.karpuninAlek.demo.repositories.UserService;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 @RestController
 public class UserController {
 
-    private static final ResponseEntity<ResultResponse> illegalLogin = ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(new ResultResponse(new IllegalArgumentException("Passed login isn't a possible one")));
+    //region Common responses
+
+    private static ResponseEntity<ResultResponse> badRequestResponse(Exception exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ResultResponse(exception));
+    }
 
     private static ResponseEntity<ResultResponse> internalErrorResponse(Exception exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResultResponse(exception));
     }
 
-    private static ResponseEntity<ResultResponse> internalErrorResponse(Exception exception, List<String> errors) {
-        errors.add(exception.getLocalizedMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResultResponse(errors));
+    private static ResponseEntity<ResultResponse> notFoundResponse(Exception exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ResultResponse(exception));
     }
+
+    //endregion
 
     @Autowired
-    UserRepository userRepository;
+    UserService userService;
 
     @RequestMapping(value = "users", method = RequestMethod.GET)
-    public @ResponseBody
-    ResponseEntity<?> getUsers(){
+    public ResponseEntity<?> getUsers(){
         try {
-            return ResponseEntity.ok(userRepository.findAllBy());
+            return ResponseEntity.ok(userService.getAll());
         } catch (Exception e) {
-            return internalErrorResponse(e);
-        }
-
-    }
-
-    @RequestMapping(value = "users", method = RequestMethod.POST)
-    public @ResponseBody
-    ResponseEntity<?> setUser(@RequestBody UserDTO dto){
-        User user = new User(dto);
-        if (user.isFaulty()) {
-            return ResponseEntity.badRequest().body(new ResultResponse(user.getErrors()));
-        }
-        try {
-            userRepository.save(user);
-            return ResponseEntity.ok(new ResultResponse());
-        }
-        catch (Exception e) {
             return internalErrorResponse(e);
         }
     }
 
     @RequestMapping(value = "users/{login}", method = RequestMethod.GET)
-    public @ResponseBody
-    ResponseEntity<?> getUser(@PathVariable String login){
-        if (!User.isLoginOfLength(login)) {
-            return illegalLogin;
-        }
+    public ResponseEntity<?> getUser(@PathVariable String login){
         try {
-            User found = userRepository.findByLogin(login);
-            return ResponseEntity.ok(found);
+            return ResponseEntity.ok(userService.getBy(login));
+        } catch (IllegalArgumentException e) {
+            return badRequestResponse(e);
+        } catch (Exception e) {
+            return internalErrorResponse(e);
+        }
+    }
+
+    @RequestMapping(value = "users", method = RequestMethod.POST)
+    public ResponseEntity<?> setUser(@RequestBody UserDTO dto){
+        try {
+            return ResponseEntity.ok(userService.save(dto));
+        } catch (IllegalArgumentException e) {
+            return badRequestResponse(e);
         } catch (Exception e) {
             return internalErrorResponse(e);
         }
     }
 
     @RequestMapping(value = "users/{login}", method = RequestMethod.DELETE)
-    public @ResponseBody
-    ResponseEntity<?> deleteUser(@PathVariable String login){
-        if (!User.isLoginOfLength(login)) {
-            return illegalLogin;
-        }
+    public ResponseEntity<?> deleteUser(@PathVariable String login){
         try {
-            if (userRepository.existsByLogin(login)) {
-                userRepository.deleteById(login);
-                return ResponseEntity.ok(new ResultResponse());
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ResultResponse(new NoSuchElementException("No user with such login found")));
-            }
+            userService.delete(login);
+            return ResponseEntity.ok(new ResultResponse());
+        } catch (IllegalArgumentException e) {
+            return badRequestResponse(e);
+        } catch (NoSuchElementException e) {
+            return notFoundResponse(e);
         } catch (Exception e) {
             return internalErrorResponse(e);
         }
     }
 
     @RequestMapping(value = "users/{login}", method = RequestMethod.PUT)
-    public @ResponseBody
-    ResponseEntity<?> updateUser(@PathVariable String login, @RequestBody UserDTO dto){
-        if (!User.isLoginOfLength(login)) {
-            return illegalLogin;
-        }
-        User user = new User(dto);
-        List<String> errors = user.getErrors();
+    public ResponseEntity<?> updateUser(@PathVariable String login, @RequestBody UserDTO dto){
         try {
-            if (!userRepository.existsByLogin(login)) {
-                errors.add("User with given login doesn't exist");
-            }
-            if (!login.equals(user.getLogin()) && !userRepository.existsByLogin(user.getLogin())) {
-                errors.add("Can't change user's login to already existing one");
-            }
-            if (errors.size() > 0) {
-                return ResponseEntity.badRequest().body(new ResultResponse(errors));
-            }
-            if (login.equals(user.getLogin())) {
-                User existing = userRepository.findByLogin(login);
-                userRepository.save(existing.updatedFrom(user));
+            ResultResponse result = userService.update(login, dto);
+            if (result.isSuccess()) {
+                return ResponseEntity.ok(result);
             } else {
-                userRepository.deleteById(login);
-                userRepository.save(user);
+                return ResponseEntity.unprocessableEntity().body(result);
             }
-            return ResponseEntity.ok(new ResultResponse());
-
+        } catch (IllegalArgumentException e) {
+            return badRequestResponse(e);
+        } catch (NoSuchElementException e) {
+            return notFoundResponse(e);
         } catch (Exception e) {
-            return internalErrorResponse(e, errors);
+            return internalErrorResponse(e);
         }
     }
 }

@@ -2,21 +2,42 @@ package ru.karpuninAlek.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
+import ru.karpuninAlek.demo.model.DTOs.RoleDTO;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
+@Table(name = "role")
 public class Role {
+
+    //region Fields
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
+    @JoinColumn(name = "user_login", nullable = false)
     private Long id;
+
     @NotNull
     private String name;
+
+    @ManyToMany(cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+    })
+    @JoinTable(
+            name = "role_user",
+            joinColumns = {@JoinColumn(name = "role_id")},
+            inverseJoinColumns = {@JoinColumn(name = "user_login")}
+    )
     @JsonIgnore
-    @NotNull
-    private Long count = 0l;
+    private final Set<User> users = new HashSet<>();
+
+    //endregion
+
+    //region Initializers
 
     protected Role() {}
 
@@ -24,33 +45,45 @@ public class Role {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
+    public Role(RoleDTO dto) {
+        this.name = dto.name;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    //endregion
+
+    //region Getters
+
+    public Long getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    //endregion
+
+    //region Setters
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public Role incremented(){
-        count++;
-        return this;
+    //endregion
+
+    public void addUser(User user) {
+        this.users.add(user);
     }
 
-    public Role decremented(){
-        count--;
-        return this;
-    }
-
-    public boolean isInUse(){
-        return count > 0;
+    public void removeUser(User user) {
+        this.users.remove(user);
     }
 }

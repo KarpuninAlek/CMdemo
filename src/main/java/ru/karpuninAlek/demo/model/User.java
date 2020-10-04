@@ -4,18 +4,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import ru.karpuninAlek.demo.model.DTOs.UserDTO;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Transient;
+import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
+@Table(name = "user")
 public class User {
 
     private static final int MAX_LOGIN_LENGTH = 100;
     private static final int MAX_PASSWORD_LENGTH = 200;
     private static final int MAX_NAME_LENGTH = 300;
+
+    //region Fields
 
     @Id
     @NotNull
@@ -26,10 +29,17 @@ public class User {
     @NotNull
     private String password;
 
+    @ManyToMany(mappedBy = "users")
+    @JsonIgnore
+    private Set<Role> roles = new HashSet<>();
+
     @Transient
     @JsonIgnore
     private final List<String> errors = new ArrayList<>();
 
+    //endregion
+
+    //region Initializers
     protected User() {}
 
     public User(UserDTO dto) {
@@ -41,15 +51,33 @@ public class User {
         setName(name);
         setPassword(password);
     }
+    //endregion
+
+    //region Getters
 
     public String getLogin() {
         return login;
     }
 
-    public static boolean isLoginOfLength(String login) {
-        final int length = login.length();
-        return length <= MAX_LOGIN_LENGTH && length > 0;
+    public String getName() {
+        return name;
     }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    //endregion
+
+    //region Setters
 
     public void setLogin(String login) {
         if (login == null) {
@@ -65,10 +93,6 @@ public class User {
         this.login = login;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public void setName(String name) {
         if (name == null) {
             errors.add("Name can't be null");
@@ -78,10 +102,6 @@ public class User {
             errors.add("Name is too long");
         }
         this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public void setPassword(String password) {
@@ -98,17 +118,33 @@ public class User {
         this.password = password;
     }
 
-    public List<String> getErrors() {
-        return errors;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
-    public boolean isFaulty(){
-        return errors.size() > 0;
-    }
+    //endregion
 
     public User updatedFrom(User another){
         name = another.name;
         password = another.password;
         return this;
     }
+
+    public void addError(String error) {
+        errors.add(error);
+    }
+
+    public static boolean isLoginOfLength(String login) {
+        final int length = login.length();
+        return length <= MAX_LOGIN_LENGTH && length > 0;
+    }
+
+    @JsonIgnore
+    public boolean isFaulty(){
+        return errors.size() > 0;
+    }
+
+
+
+
 }
