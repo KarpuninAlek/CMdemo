@@ -41,12 +41,18 @@ public class Role {
 
     protected Role() {}
 
-    public Role(String name) {
+    public Role(String name) throws IllegalArgumentException {
+        if (name == null) {
+            throw new IllegalArgumentException("Role's name can't be null");
+        }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Role's name can't be empty");
+        }
         this.name = name;
     }
 
-    public Role(RoleDTO dto) {
-        this.name = dto.name;
+    public Role(RoleDTO dto) throws IllegalArgumentException {
+        this(dto.name);
     }
 
     //endregion

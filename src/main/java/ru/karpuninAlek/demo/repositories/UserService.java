@@ -105,7 +105,7 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    User checkedForUpdateUser(String login, UserDTO dto){
+    User checkedForUpdateUser(String login, UserDTO dto) throws Exception{
         User user = new User(dto);
         if (!login.equals(user.getLogin()) && userRepository.existsByLogin(user.getLogin())) {
             user.addError("Can't change user's login to already existing one");
