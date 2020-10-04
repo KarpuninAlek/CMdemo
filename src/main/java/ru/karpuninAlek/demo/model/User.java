@@ -85,7 +85,7 @@ public class User {
             return;
         }
         if (login.matches(".* +.*")) {
-            errors.add("Login has spaces");
+            errors.add("Login must not contain space symbols");
         }
         if (!isLoginOfLength(login)) {
             errors.add("Login is too long");
@@ -109,6 +109,8 @@ public class User {
             errors.add("Password can't be null");
             return;
         }
+        // ".*\\d.*" = contains a number
+        // ".*\\p{Lu}.*" = contains a capital letter
         if (!(password.matches(".*\\d.*") && password.matches(".*\\p{Lu}.*"))) {
             errors.add("Password is not up to security standard");
         }
@@ -125,8 +127,9 @@ public class User {
     //endregion
 
     public User updatedFrom(User another){
-        name = another.name;
-        password = another.password;
+        this.name = another.name;
+        this.password = another.password;
+        this.roles = another.getRoles();
         return this;
     }
 

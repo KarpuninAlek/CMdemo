@@ -1,6 +1,5 @@
 package ru.karpuninAlek.demo;
 
-import org.hamcrest.Matcher;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -14,12 +13,11 @@ import org.springframework.http.ResponseEntity;
 import ru.karpuninAlek.demo.model.DTOs.RoleDTO;
 import ru.karpuninAlek.demo.model.DTOs.UserDTO;
 import ru.karpuninAlek.demo.model.ResultResponse;
+import ru.karpuninAlek.demo.repositories.RoleRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-//import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
@@ -33,6 +31,9 @@ public class UserHttpRequestTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     private String usersUrl() {
         return "http://localhost:" + port + "/users/";
@@ -184,6 +185,24 @@ public class UserHttpRequestTest {
         assertThatResponseIsSuccessfulWithNotEmptyBody(response);
         UserDTO[] expected = samples.toArray(new UserDTO[0]);
         assertThat(response.getBody(), is(expected));
+        assertThat(roleRepository.existsByName("Role #" + 4), is(false));
+    }
+
+    @Test
+    @Order(10)
+    public void shouldReturnChangedUser() throws Exception {
+        List<UserDTO> samples = getCorrectUserSamplesNoRoles();
+        List<RoleDTO> roleSamples = getRoleSamples();
+        UserDTO changed = samples.get(5);
+        changed.roles = new ArrayList<>();
+        changed.roles.add(roleSamples.get(2));
+        changed.roles.add(roleSamples.get(9));
+        changed.roles.add(roleSamples.get(10));
+        changed.name = "changed for no reason name";
+        this.restTemplate.put(usersUrl() + changed.login, changed);
+        ResponseEntity<UserDTO> userResponse = this.restTemplate.getForEntity(usersUrl() + changed.login, UserDTO.class);
+        assertThatResponseIsSuccessfulWithNotNullBody(userResponse);
+        assertThat(userResponse.getBody(), is(changed));
     }
 
 }
