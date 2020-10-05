@@ -10,6 +10,7 @@ import ru.karpuninAlek.demo.model.DTOs.UserDTO;
 import ru.karpuninAlek.demo.model.ResultResponse;
 import ru.karpuninAlek.demo.model.User;
 import ru.karpuninAlek.demo.model.Role;
+import ru.karpuninAlek.demo.repositories.RoleRepository;
 import ru.karpuninAlek.demo.repositories.UserRepository;
 import ru.karpuninAlek.demo.repositories.UserService;
 import ru.karpuninAlek.demo.web.UserController;
@@ -29,6 +30,8 @@ class TestApplicationTests {
 
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	RoleRepository roleRepository;
 
 	private static int usersAdded = 0;
 	private static final int CORRECT_ROLES_COUNT = 50;
@@ -258,6 +261,27 @@ class TestApplicationTests {
 				usersAdded--;
 				assertThat(userRepository.findByLogin(addedUser.login), is(nullValue()));
 			}
+		}
+	}
+
+	@Order(5)
+	@Test
+	void deleteShouldDeleteExistingUsersWithSameRoleAndThatRole() throws Exception {
+
+		List<Role> savedRoles = roleRepository.findAllBy();
+		if (savedRoles.size() > 0) {
+			Role role;
+			do {
+				role = savedRoles.get(new Random().nextInt(savedRoles.size()));
+			} while (role.getUsers().size() > 1);
+
+			for (User user : role.getUsers()) {
+				resultResponseShouldBeOK(userController.deleteUser(user.getLogin()), usersAdded - 1);
+				usersAdded--;
+				assertThat(userRepository.findByLogin(user.getLogin()), is(nullValue()));
+			}
+
+			assertThat(roleRepository.existsByName(role.getName()), is(false));
 		}
 	}
 

@@ -29,10 +29,12 @@ public class Role {
     @NotNull
     private String name;
 
+    // TODO remove fetch
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE,
-    })
+    },
+    fetch = FetchType.EAGER)
     @JoinTable(
             name = "role_user",
             joinColumns = {@JoinColumn(name = "role_id")},

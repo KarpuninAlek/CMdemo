@@ -42,6 +42,7 @@ public class User {
     @NotNull
     private String password;
 
+    // TODO remove fetch
     @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<Role> roles = new HashSet<>();
