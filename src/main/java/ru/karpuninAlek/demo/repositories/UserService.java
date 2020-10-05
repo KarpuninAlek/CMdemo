@@ -3,6 +3,7 @@ package ru.karpuninAlek.demo.repositories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.karpuninAlek.demo.model.DTOs.RoleDTO;
 import ru.karpuninAlek.demo.model.DTOs.UserDTO;
 import ru.karpuninAlek.demo.model.ResultResponse;
 import ru.karpuninAlek.demo.model.Role;
@@ -74,7 +75,9 @@ public class UserService {
 
         if (dto.roles != null && !dto.roles.isEmpty()) {
             Set<Role> roles = new HashSet<>();
-            dto.roles.forEach(role -> roles.add(new Role(role)));
+            for (RoleDTO roleDto: dto.roles) {
+                roles.add(new Role(roleDto));
+            }
 
             roles.forEach(role -> saveRoleWithUser(role, user));
 

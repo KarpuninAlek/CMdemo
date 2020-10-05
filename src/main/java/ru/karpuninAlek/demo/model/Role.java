@@ -14,6 +14,10 @@ public class Role {
 
     private static final int MAX_NAME_LENGTH = 100;
 
+    public static final String NULL_NAME = "Role's name can't be null";
+    public static final String EMPTY_NAME = "Role's name can't be empty";
+    public static final String LONG_NAME = "Role's name is too long";
+
     //region Fields
 
     @Id
@@ -69,13 +73,13 @@ public class Role {
 
     public void setName(String name) {
         if (name == null) {
-            throw new IllegalArgumentException("Role's name can't be null");
+            throw new IllegalArgumentException(NULL_NAME);
         }
         if (name.isEmpty()) {
-            throw new IllegalArgumentException("Role's name can't be empty");
+            throw new IllegalArgumentException(EMPTY_NAME);
         }
         if (name.length() > MAX_NAME_LENGTH) {
-            throw new IllegalArgumentException("Role's name is too long");
+            throw new IllegalArgumentException(LONG_NAME);
         }
         this.name = name;
     }
