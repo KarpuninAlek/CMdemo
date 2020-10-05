@@ -31,22 +31,21 @@ public class UserDTO {
     //endregion
 
     public boolean equals(Object obj) {
-        try {
-            UserDTO another = (UserDTO) obj;
-            return login.equals(another.login)
-                    && name.equals(another.name)
-                    && password.equals(another.password)
-                    && (
-                    (roles == null && another.roles == null)
-                            || (
-                                    roles != null && another.roles != null
-                                    && roles.size() == another.roles.size()
-                                    && roles.containsAll(another.roles)
-                                    && another.roles.containsAll(roles)
-                    )
-            );
-        } catch (Exception e) {
+        if (!(obj instanceof UserDTO)) {
             return false;
         }
+        UserDTO another = (UserDTO) obj;
+        return login.equals(another.login)
+                && name.equals(another.name)
+                && password.equals(another.password)
+                && (
+                (roles == null && another.roles == null)
+                        || (
+                        roles != null && another.roles != null
+                                && roles.size() == another.roles.size()
+                                && roles.containsAll(another.roles)
+                                && another.roles.containsAll(roles)
+                )
+        );
     }
 }

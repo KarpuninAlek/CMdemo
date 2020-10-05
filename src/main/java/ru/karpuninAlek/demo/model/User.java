@@ -18,6 +18,19 @@ public class User {
     private static final int MAX_PASSWORD_LENGTH = 200;
     private static final int MAX_NAME_LENGTH = 300;
 
+    public static final String NULL_LOGIN = "Login can't be null";
+    public static final String NULL_NAME = "Name can't be null";
+    public static final String NULL_PASSWORD = "Password can't be null";
+    public static final String EMPTY_LOGIN = "Login can't be empty";
+    public static final String EMPTY_NAME = "Name can't be empty";
+    public static final String EMPTY_PASSWORD = "Password can't be empty";
+    public static final String SPACE_LOGIN = "Login must not contain space symbols";
+    public static final String WEAK_PASSWORD = "Password is not up to security standard";
+    public static final String LONG_LOGIN = "Login is too long";
+    public static final String LONG_NAME = "Name is too long";
+    public static final String LONG_PASSWORD = "Password is too long";
+
+
     //region Fields
 
     @Id
@@ -81,66 +94,70 @@ public class User {
 
     public void setLogin(String login) {
         if (login == null) {
-            errors.add("Login can't be null");
+            errors.add(NULL_LOGIN);
             return;
         }
         if (login.isEmpty()) {
-            errors.add("Login can't be empty");
+            errors.add(EMPTY_LOGIN);
             return;
         }
         if (login.matches(".* +.*")) {
-            errors.add("Login must not contain space symbols");
+            errors.add(SPACE_LOGIN);
         }
-        if (!isLoginOfLength(login)) {
-            errors.add("Login is too long");
+        if (login.length() > MAX_LOGIN_LENGTH) {
+            errors.add(LONG_LOGIN);
         }
         this.login = login;
     }
 
     public void setName(String name) {
         if (name == null) {
-            errors.add("Name can't be null");
+            errors.add(NULL_NAME);
             return;
         }
         if (name.isEmpty()) {
-            errors.add("Name can't be empty");
+            errors.add(EMPTY_NAME);
             return;
         }
         if (name.length() > MAX_NAME_LENGTH) {
-            errors.add("Name is too long");
+            errors.add(LONG_NAME);
         }
         this.name = name;
     }
 
     public void setPassword(String password) {
         if (password == null) {
-            errors.add("Password can't be null");
+            errors.add(NULL_PASSWORD);
             return;
         }
         if (password.isEmpty()) {
-            errors.add("Password can't be empty");
+            errors.add(EMPTY_PASSWORD);
             return;
         }
         // ".*\\d.*" = contains a number
         // ".*\\p{Lu}.*" = contains a capital letter
         if (!(password.matches(".*\\d.*") && password.matches(".*\\p{Lu}.*"))) {
-            errors.add("Password is not up to security standard");
+            errors.add(WEAK_PASSWORD);
         }
         if (password.length() > MAX_PASSWORD_LENGTH) {
-            errors.add("Password is too long");
+            errors.add(LONG_PASSWORD);
         }
         this.password = password;
     }
 
     public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        if (roles != null) {
+            this.roles = roles;
+        }
     }
 
     //endregion
 
     public void updateFrom(User another){
-        this.name = another.name;
-        this.password = another.password;
+        if (another != null) {
+            this.name = another.name;
+            this.password = another.password;
+        }
     }
 
     public void addError(String error) {

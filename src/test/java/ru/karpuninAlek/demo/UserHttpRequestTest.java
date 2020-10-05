@@ -362,4 +362,15 @@ public class UserHttpRequestTest {
         assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
+    @Test
+    @Order(27)
+    public void shouldReturnSameUsers() throws Exception {
+        ResponseEntity<UserDTO[]> users1 = this.restTemplate.getForEntity(usersUrl(), UserDTO[].class);
+        assertThatResponseIsSuccessfulWithNotEmptyBody(users1);
+        this.restTemplate.delete(usersUrl() + "nonExistant");
+        ResponseEntity<UserDTO[]> users2 = this.restTemplate.getForEntity(usersUrl(), UserDTO[].class);
+        assertThatResponseIsSuccessfulWithNotEmptyBody(users2);
+        assertThat(users1, is(users2));
+    }
+
 }

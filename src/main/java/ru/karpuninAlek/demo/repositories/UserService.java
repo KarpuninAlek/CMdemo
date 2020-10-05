@@ -13,7 +13,17 @@ import java.util.*;
 @Service
 public class UserService {
 
-    private static final IllegalArgumentException illegalLogin = new IllegalArgumentException("Passed login isn't a possible one");
+    public static final String NOT_POSSIBLE_LOGIN = "Passed login isn't a possible one";
+    public static final String USER_EXISTS = "User with such login already exists";
+    public static final String NULL_DTO = "No user was passed";
+
+    private static IllegalArgumentException illegalLogin() {
+        return new IllegalArgumentException(NOT_POSSIBLE_LOGIN);
+    }
+
+    private static IllegalArgumentException nullDto() {
+        return new IllegalArgumentException(NULL_DTO);
+    }
 
     @Autowired
     UserRepository userRepository;
@@ -35,7 +45,7 @@ public class UserService {
 
     void loginCheck(String login) throws IllegalArgumentException {
         if (!User.isLoginOfLength(login)) {
-            throw illegalLogin;
+            throw illegalLogin();
         }
     }
 
@@ -50,13 +60,16 @@ public class UserService {
 
     @Transactional
     public ResultResponse save(UserDTO dto) throws Exception {
+        if (dto == null) {
+            throw nullDto();
+        }
         User user = new User(dto);
 
         if (user.isFaulty()) {
             return new ResultResponse(user.getErrors());
         }
         if (exists(user)) {
-            throw new IllegalArgumentException("User with such login already exists");
+            throw new IllegalArgumentException(USER_EXISTS);
         }
 
         if (dto.roles != null && !dto.roles.isEmpty()) {
@@ -102,6 +115,9 @@ public class UserService {
     }
 
     User checkedForUpdateUser(String login, UserDTO dto) throws Exception{
+        if (dto == null) {
+            throw nullDto();
+        }
         User user = new User(dto);
         if (!login.equals(user.getLogin()) && userRepository.existsByLogin(user.getLogin())) {
             user.addError("Can't change user's login to already existing one");

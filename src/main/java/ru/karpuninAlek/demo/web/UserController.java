@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "users", method = RequestMethod.POST)
-    public ResponseEntity<?> setUser(@RequestBody UserDTO dto){
+    public ResponseEntity<ResultResponse> setUser(@RequestBody UserDTO dto){
         try {
             ResultResponse result = userService.save(dto);
             if (result.isSuccess()) {
