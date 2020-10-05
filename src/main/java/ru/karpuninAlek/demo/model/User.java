@@ -42,7 +42,7 @@ public class User {
     @NotNull
     private String password;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     @JsonIgnore
     private Set<Role> roles = new HashSet<>();
 
@@ -166,7 +166,7 @@ public class User {
 
     public static boolean isLoginOfLength(String login) {
         final int length = login.length();
-        return length <= MAX_LOGIN_LENGTH && length > 0;
+        return login != null && length <= MAX_LOGIN_LENGTH && length > 0;
     }
 
     @JsonIgnore

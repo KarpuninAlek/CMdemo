@@ -1,8 +1,6 @@
 package ru.karpuninAlek.demo;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 
 @SpringBootTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TestApplicationTests {
 
 	@Autowired
@@ -65,12 +64,12 @@ class TestApplicationTests {
 		assertThat(response.getBody().getErrors().size(), is(errors.length));
 	}
 
-	private void resultResponseShouldBeOK(ResponseEntity<ResultResponse> response){
-		if (response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR || userRepository.findAllBy().size() != usersAdded + 1) {
+	private void resultResponseShouldBeOK(ResponseEntity<ResultResponse> response, int expectedUsersAdded){
+		if (response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR || userRepository.findAllBy().size() != expectedUsersAdded) {
 			var s = "";
 		}
 		assertThat(response.getStatusCode(), is(HttpStatus.OK));
-		assertThat(userRepository.findAllBy().size(), is(usersAdded + 1));
+		assertThat(userRepository.findAllBy().size(), is(expectedUsersAdded));
 		assertThat(response.getBody(), is(notNullValue()));
 		assertThat(response.getBody().isSuccess(), is(true));
 		assertThat(response.getBody().getErrors(), is(nullValue()));
@@ -203,18 +202,18 @@ class TestApplicationTests {
 	//endregion
 
 	void postCorrectUser(UserDTO sample) throws Exception {
-		resultResponseShouldBeOK(userController.setUser(sample));
+		resultResponseShouldBeOK(userController.setUser(sample), usersAdded + 1);
 		usersAdded++;
 	}
 
 	//region Tests
-//	@Order(1)
+	@Order(1)
 	@Test
 	void contextLoads() throws Exception {
 		assertThat(userController, is(notNullValue()));
 	}
 
-//	@Order(1)
+	@Order(2)
 	@Test
 	void postShouldReturnUnprocessableErrors() throws Exception {
 		unprocessableUsers.forEach((sample, errors) -> resultResponseShouldBeUnprocessableAndContainErrors(userController.setUser(sample), errors.toArray(new String[0])));
@@ -222,13 +221,13 @@ class TestApplicationTests {
 		resultResponseShouldBeBadRequestAndContainErrors(userController.setUser(null), new String[] {UserService.NULL_DTO});
 	}
 
-//	@Order(1)
+	@Order(2)
 	@Test
 	void postShouldReturnBadRequestErrors() throws Exception {
 		resultResponseShouldBeBadRequestAndContainErrors(userController.setUser(null), new String[] {UserService.NULL_DTO});
 	}
 
-//	@Order(1)
+	@Order(2)
 	@Test
 	void postShouldReturnSuccess() throws Exception {
 		for (UserDTO sample : correctUsers) {
@@ -236,14 +235,43 @@ class TestApplicationTests {
 		}
 	}
 
-//	@Order(5)
+	@Order(5)
 	@Test
 	void postShouldReturnUserExists() throws Exception {
 		List<User> addedUsers = userRepository.findAllBy();
-		if (addedUsers.size() > 0) {
-			UserDTO addedUser = new UserDTO(addedUsers.get(new Random().nextInt(addedUsers.size() - 1)));
-			resultResponseShouldBeBadRequestAndContainErrors(userController.setUser(addedUser), new String[] {UserService.USER_EXISTS});
+		if (addedUsers.size() > 0){
+			for (int i = 0; i < new Random().nextInt(addedUsers.size()); i++) {
+				UserDTO addedUser = new UserDTO(addedUsers.get(new Random().nextInt(addedUsers.size() - 1)));
+				resultResponseShouldBeBadRequestAndContainErrors(userController.setUser(addedUser), new String[] {UserService.USER_EXISTS});
+			}
 		}
+	}
+
+	@Order(5)
+	@Test
+	void deleteShouldDeleteExistingUser() throws Exception {
+		List<User> addedUsers = userRepository.findAllBy();
+		if (addedUsers.size() > 1) {
+			for (int i = 0; i < new Random().nextInt(addedUsers.size() / 2); i++) {
+				UserDTO addedUser = new UserDTO(addedUsers.get(new Random().nextInt(addedUsers.size() - 1)));
+				resultResponseShouldBeOK(userController.deleteUser(addedUser.login), usersAdded - 1);
+				usersAdded--;
+				assertThat(userRepository.findByLogin(addedUser.login), is(nullValue()));
+			}
+		}
+	}
+
+	@Order(5)
+	@Test
+	void deleteShouldReturnUserDoesntExists() throws Exception {
+		assertThat(userController.deleteUser("nonExistant").getStatusCode(), is(HttpStatus.NOT_FOUND));
+	}
+
+	@Order(5)
+	@Test
+	void deleteShouldReturnBadRequest() throws Exception {
+		assertThat(userController.deleteUser("").getStatusCode(), is(HttpStatus.BAD_REQUEST));
+		assertThat(userController.deleteUser(null).getStatusCode(), is(HttpStatus.BAD_REQUEST));
 	}
 	//endregion
 

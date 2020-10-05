@@ -80,7 +80,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "users/{login}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteUser(@PathVariable String login){
+    public ResponseEntity<ResultResponse> deleteUser(@PathVariable String login){
         try {
             userService.delete(login);
             return ResponseEntity.ok(new ResultResponse());

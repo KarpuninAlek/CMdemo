@@ -45,7 +45,7 @@ public class UserService {
     }
 
     void loginCheck(String login) throws IllegalArgumentException {
-        if (!User.isLoginOfLength(login)) {
+        if (login == null || !User.isLoginOfLength(login)) {
             throw illegalLogin();
         }
     }
