@@ -55,6 +55,8 @@ public class UserController {
             return ResponseEntity.ok(userService.getBy(login));
         } catch (IllegalArgumentException e) {
             return badRequestResponse(e);
+        } catch (NoSuchElementException e) {
+            return notFoundResponse(e);
         } catch (Exception e) {
             return internalErrorResponse(e);
         }

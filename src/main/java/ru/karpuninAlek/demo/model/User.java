@@ -138,10 +138,9 @@ public class User {
 
     //endregion
 
-    public User updatedFrom(User another){
+    public void updateFrom(User another){
         this.name = another.name;
         this.password = another.password;
-        return this;
     }
 
     public void addError(String error) {

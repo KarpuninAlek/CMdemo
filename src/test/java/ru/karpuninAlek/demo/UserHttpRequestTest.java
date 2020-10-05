@@ -354,4 +354,12 @@ public class UserHttpRequestTest {
         assertThatResponseIsSuccessfulWithNotNullBody(response);
         assertThat(response.getBody(), is(equalTo(sample)));
     }
+
+    @Test
+    @Order(26)
+    public void shouldReturnUserNotFound() throws Exception {
+        ResponseEntity<UserDTO> response = this.restTemplate.getForEntity(usersUrl() + "nonExistant", UserDTO.class);
+        assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+    }
+
 }

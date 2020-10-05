@@ -22,11 +22,7 @@ public class UserService {
     RoleRepository roleRepository;
 
     public boolean exists(String login) {
-        if (User.isLoginOfLength(login)) {
-            return userRepository.existsByLogin(login);
-        } else {
-            return false;
-        }
+        return User.isLoginOfLength(login) && userRepository.existsByLogin(login);
     }
 
     boolean exists(User user) {
@@ -44,15 +40,12 @@ public class UserService {
     }
 
     void saveRoleWithUser(Role role, User user) {
-        if (roleRepository.existsByName(role.getName())) {
-            Optional<Role> existing = roleRepository.findByName(role.getName());
-            existing.ifPresent(surelyExisting -> {
-                surelyExisting.addUser(user);
-            });
-        } else {
-            role.addUser(user);
-            roleRepository.save(role);
-        }
+        Optional<Role> existingRole = roleRepository.findByName(role.getName());
+        existingRole.ifPresentOrElse(surelyExistingRole -> surelyExistingRole.addUser(user),
+                () -> {
+                    role.addUser(user);
+                    roleRepository.save(role);
+                });
     }
 
     @Transactional
@@ -83,6 +76,9 @@ public class UserService {
     public UserDTO getBy(String login) throws Exception {
         loginCheck(login);
         User found = userRepository.findByLogin(login);
+        if (found == null) {
+            throw new NoSuchElementException("No such user found");
+        }
         return new UserDTO(found);
     }
 
@@ -148,7 +144,7 @@ public class UserService {
 
                 existing.setRoles(user.getRoles());
             }
-            existing.updatedFrom(user);
+            existing.updateFrom(user);
         } else {
             delete(login);
             userRepository.save(user);

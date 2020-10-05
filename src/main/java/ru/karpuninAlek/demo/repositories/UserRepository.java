@@ -13,8 +13,4 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     boolean existsByLogin(String login);
 
-    User getByLogin(String login);
-
-    void deleteByLogin(String login);
-
 }

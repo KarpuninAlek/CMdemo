@@ -33,22 +33,18 @@ public class UserDTO {
     public boolean equals(Object obj) {
         try {
             UserDTO another = (UserDTO) obj;
-            if (login.equals(another.login)
+            return login.equals(another.login)
                     && name.equals(another.name)
                     && password.equals(another.password)
                     && (
-                            (roles == null && another.roles == null)
-                                    || (
-                                            roles.size() == another.roles.size()
-                                                    && roles.containsAll(another.roles)
-                                                    && another.roles.containsAll(roles)
-                                        )
-                        )
-                ) {
-                return true;
-            } else {
-                return false;
-            }
+                    (roles == null && another.roles == null)
+                            || (
+                                    roles != null && another.roles != null
+                                    && roles.size() == another.roles.size()
+                                    && roles.containsAll(another.roles)
+                                    && another.roles.containsAll(roles)
+                    )
+            );
         } catch (Exception e) {
             return false;
         }

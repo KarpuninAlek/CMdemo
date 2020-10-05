@@ -12,6 +12,8 @@ import java.util.Set;
 @Table(name = "role")
 public class Role {
 
+    private static final int MAX_NAME_LENGTH = 100;
+
     //region Fields
 
     @Id
@@ -42,13 +44,7 @@ public class Role {
     protected Role() {}
 
     public Role(String name) throws IllegalArgumentException {
-        if (name == null) {
-            throw new IllegalArgumentException("Role's name can't be null");
-        }
-        if (name.isEmpty()) {
-            throw new IllegalArgumentException("Role's name can't be empty");
-        }
-        this.name = name;
+        setName(name);
     }
 
     public Role(RoleDTO dto) throws IllegalArgumentException {
@@ -58,10 +54,6 @@ public class Role {
     //endregion
 
     //region Getters
-
-    public Long getId() {
-        return id;
-    }
 
     public String getName() {
         return name;
@@ -75,11 +67,16 @@ public class Role {
 
     //region Setters
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public void setName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Role's name can't be null");
+        }
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Role's name can't be empty");
+        }
+        if (name.length() > MAX_NAME_LENGTH) {
+            throw new IllegalArgumentException("Role's name is too long");
+        }
         this.name = name;
     }
 
