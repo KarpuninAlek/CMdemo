@@ -12,6 +12,7 @@ public interface RoleRepository extends CrudRepository<Role, Long> {
 
     boolean existsByName(String name);
 
+    // TODO remove
     List<Role> findAllBy();
 
 }

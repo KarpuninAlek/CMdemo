@@ -26,6 +26,10 @@ public class UserService {
         return new IllegalArgumentException(NULL_DTO);
     }
 
+    private static NoSuchElementException noUserFound() {
+        return new NoSuchElementException("User with such login doesn't exist");
+    }
+
     @Autowired
     UserRepository userRepository;
 
@@ -93,7 +97,7 @@ public class UserService {
         loginCheck(login);
         User found = userRepository.findByLogin(login);
         if (found == null) {
-            throw new NoSuchElementException("No such user found");
+            throw noUserFound();
         }
         return new UserDTO(found);
     }
@@ -109,7 +113,7 @@ public class UserService {
     public void delete(String login) throws Exception {
         loginCheck(login);
         if (!exists(login)){
-            throw new NoSuchElementException("User with such login doesn't exist");
+            throw noUserFound();
         }
 
         User user = userRepository.findByLogin(login);
@@ -121,19 +125,22 @@ public class UserService {
         if (dto == null) {
             throw nullDto();
         }
+        if (!exists(login)) {
+            throw noUserFound();
+        }
         User user = new User(dto);
         if (!login.equals(user.getLogin()) && userRepository.existsByLogin(user.getLogin())) {
             user.addError("Can't change user's login to already existing one");
         }
         if (dto.roles != null) {
             Set<Role> roles = new HashSet<>();
-            dto.roles.forEach(roleDTO -> {
+            for (RoleDTO roleDTO: dto.roles) {
                 if (roleRepository.existsByName(roleDTO.name)) {
                     roleRepository.findByName(roleDTO.name).ifPresent(roles::add);
                 } else {
                     roles.add(roleRepository.save(new Role(roleDTO.name)));
                 }
-            });
+            }
             user.setRoles(roles);
         }
 

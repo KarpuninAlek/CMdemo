@@ -94,7 +94,7 @@ public class UserController {
     }
 
     @RequestMapping(value = "users/{login}", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateUser(@PathVariable String login, @RequestBody UserDTO dto){
+    public ResponseEntity<ResultResponse> updateUser(@PathVariable String login, @RequestBody UserDTO dto){
         try {
             ResultResponse result = userService.update(login, dto);
             if (result.isSuccess()) {

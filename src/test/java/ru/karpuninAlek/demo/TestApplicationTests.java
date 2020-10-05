@@ -257,6 +257,7 @@ class TestApplicationTests {
 		if (addedUsers.size() > 1) {
 			for (int i = 0; i < new Random().nextInt(addedUsers.size() / 2); i++) {
 				UserDTO addedUser = new UserDTO(addedUsers.get(new Random().nextInt(addedUsers.size() - 1)));
+				addedUsers.remove(addedUser);
 				resultResponseShouldBeOK(userController.deleteUser(addedUser.login), usersAdded - 1);
 				usersAdded--;
 				assertThat(userRepository.findByLogin(addedUser.login), is(nullValue()));
@@ -296,6 +297,45 @@ class TestApplicationTests {
 	void deleteShouldReturnBadRequest() throws Exception {
 		assertThat(userController.deleteUser("").getStatusCode(), is(HttpStatus.BAD_REQUEST));
 		assertThat(userController.deleteUser(null).getStatusCode(), is(HttpStatus.BAD_REQUEST));
+	}
+
+	@Order(10)
+	@Test
+	void putShouldUpdateUsersSoThatRoleIsDeleted() throws Exception {
+		List<Role> savedRoles = roleRepository.findAllBy();
+		if (savedRoles.size() > 0) {
+			Role role;
+			do {
+				role = savedRoles.get(new Random().nextInt(savedRoles.size()));
+			} while (role.getUsers().size() > 1);
+
+			for (User user : role.getUsers()) {
+				UserDTO dto = new UserDTO(user);
+				Role finalRole = role;
+				dto.roles.removeIf(roleDTO -> roleDTO.name.equals(finalRole.getName()));
+				resultResponseShouldBeOK(userController.updateUser(user.getLogin(), dto), usersAdded);
+				assertThat(roleRepository.existsByName(role.getName()), is(false));
+			}
+
+			assertThat(roleRepository.existsByName(role.getName()), is(false));
+		}
+	}
+
+	@Order(10)
+	@Test
+	void updateShouldReturnUserDoesntExists() throws Exception {
+		assertThat(userController.updateUser("nonExistant", correctUsers.get(new Random().nextInt(correctUsers.size()) - 1)).getStatusCode(), is(HttpStatus.NOT_FOUND));
+	}
+
+	@Order(10)
+	@Test
+	void updateShouldReturnUnprocessable() throws Exception {
+		List<User> addedUsers = userRepository.findAllBy();
+		if (addedUsers.size() > 0) {
+			UserDTO addedUser = new UserDTO(addedUsers.get(new Random().nextInt(addedUsers.size() - 1)));
+			UserDTO faulty = (UserDTO) unprocessableUsers.keySet().toArray()[new Random().nextInt(unprocessableUsers.size() - 1)];
+			assertThat(userController.updateUser(addedUser.login, faulty).getStatusCode(), is(HttpStatus.UNPROCESSABLE_ENTITY));
+		}
 	}
 	//endregion
 
